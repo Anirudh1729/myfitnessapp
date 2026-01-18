@@ -137,6 +137,23 @@ class Database:
             )
         ''')
 
+        # Custom exercises table (user-added exercises)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS custom_exercises (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                exercise_type TEXT DEFAULT 'compound',
+                primary_muscles TEXT,
+                secondary_muscles TEXT,
+                equipment TEXT,
+                difficulty TEXT DEFAULT 'intermediate',
+                form_tips TEXT,
+                common_mistakes TEXT,
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
         self.conn.commit()
 
     def close(self):
@@ -456,3 +473,93 @@ class Database:
             WHERE user_id = ? AND date >= date('now', 'weekday 0', '-7 days')
         ''', (user_id,))
         return cursor.fetchone()[0]
+
+    # Custom exercise operations
+    def add_custom_exercise(self, name: str, exercise_type: str, primary_muscles: List[str],
+                           secondary_muscles: List[str], equipment: List[str], difficulty: str,
+                           form_tips: List[str], common_mistakes: List[str], description: str = "") -> int:
+        """Add a custom exercise to the database."""
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO custom_exercises (name, exercise_type, primary_muscles, secondary_muscles,
+                equipment, difficulty, form_tips, common_mistakes, description)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                name,
+                exercise_type,
+                ','.join(primary_muscles),
+                ','.join(secondary_muscles),
+                ','.join(equipment),
+                difficulty,
+                '|||'.join(form_tips),
+                '|||'.join(common_mistakes),
+                description
+            ))
+            self.conn.commit()
+            return cursor.lastrowid
+        except sqlite3.IntegrityError:
+            # Exercise already exists
+            return -1
+
+    def get_custom_exercise(self, name: str) -> Optional[dict]:
+        """Get a custom exercise by name."""
+        cursor = self.conn.cursor()
+        cursor.execute('SELECT * FROM custom_exercises WHERE LOWER(name) = LOWER(?)', (name,))
+        row = cursor.fetchone()
+        if row:
+            return {
+                'id': row['id'],
+                'name': row['name'],
+                'type': row['exercise_type'],
+                'primary_muscles': row['primary_muscles'].split(',') if row['primary_muscles'] else [],
+                'secondary_muscles': row['secondary_muscles'].split(',') if row['secondary_muscles'] else [],
+                'equipment': row['equipment'].split(',') if row['equipment'] else [],
+                'difficulty': row['difficulty'],
+                'form_tips': row['form_tips'].split('|||') if row['form_tips'] else [],
+                'common_mistakes': row['common_mistakes'].split('|||') if row['common_mistakes'] else [],
+                'description': row['description']
+            }
+        return None
+
+    def get_all_custom_exercises(self) -> List[dict]:
+        """Get all custom exercises."""
+        cursor = self.conn.cursor()
+        cursor.execute('SELECT * FROM custom_exercises ORDER BY name')
+        exercises = []
+        for row in cursor.fetchall():
+            exercises.append({
+                'id': row['id'],
+                'name': row['name'],
+                'type': row['exercise_type'],
+                'primary_muscles': row['primary_muscles'].split(',') if row['primary_muscles'] else [],
+                'secondary_muscles': row['secondary_muscles'].split(',') if row['secondary_muscles'] else [],
+                'equipment': row['equipment'].split(',') if row['equipment'] else [],
+                'difficulty': row['difficulty'],
+                'form_tips': row['form_tips'].split('|||') if row['form_tips'] else [],
+                'common_mistakes': row['common_mistakes'].split('|||') if row['common_mistakes'] else [],
+                'description': row['description']
+            })
+        return exercises
+
+    def get_exercise_history_detailed(self, user_id: int, exercise_name: str, limit: int = 5) -> List[dict]:
+        """Get detailed exercise history with all sets from recent workouts."""
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT we.*, w.date FROM workout_exercises we
+            JOIN workouts w ON we.workout_id = w.id
+            WHERE w.user_id = ? AND LOWER(we.exercise_name) = LOWER(?)
+            ORDER BY w.date DESC, we.id DESC
+            LIMIT ?
+        ''', (user_id, exercise_name, limit))
+
+        history = []
+        for row in cursor.fetchall():
+            history.append({
+                'date': row['date'],
+                'sets': row['sets'],
+                'reps': row['reps'],
+                'weight_kg': row['weight_kg'],
+                'notes': row['notes']
+            })
+        return history

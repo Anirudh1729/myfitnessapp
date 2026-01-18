@@ -234,22 +234,21 @@ class FitnessApp:
         while True:
             print("""
   Commands:
-    - Type exercise name to log it
+    - Type exercise name to log it (shows form + recommended weight/reps)
+    - 'add <exercise>' or 'add <exercise> | description' to add new exercise
     - 'done' to finish workout
-    - 'form <exercise>' for form tips
     - 'search <query>' to find exercises
     - 'summary' to see workout so far
 """)
-            cmd = self.get_input("Exercise or command").strip().lower()
+            cmd = self.get_input("Exercise or command").strip()
 
-            if cmd == "done":
+            if cmd.lower() == "done":
                 break
-            elif cmd == "summary":
+            elif cmd.lower() == "summary":
                 print(self.workout.get_workout_summary(self.current_workout.id))
-            elif cmd.startswith("form "):
-                exercise_name = cmd[5:]
-                print(self.workout.get_form_tips_display(exercise_name))
-            elif cmd.startswith("search "):
+            elif cmd.lower().startswith("add "):
+                self.add_new_exercise(cmd[4:])
+            elif cmd.lower().startswith("search "):
                 query = cmd[7:]
                 print(self.workout.get_exercise_search_results(query))
             elif cmd:
@@ -264,13 +263,57 @@ class FitnessApp:
         self.current_workout = None
         self.pause()
 
-    def log_exercise(self, exercise_name: str, workout_type: str):
-        """Log a single exercise."""
-        # Show form tips and progressive overload suggestion
-        print(self.workout.get_form_tips_display(exercise_name))
-        print(self.workout.get_progressive_overload_suggestion(self.user.id, exercise_name))
+    def add_new_exercise(self, input_str: str):
+        """Add a new exercise to the database."""
+        # Parse input: "exercise name" or "exercise name | description"
+        if "|" in input_str:
+            parts = input_str.split("|", 1)
+            exercise_name = parts[0].strip()
+            description = parts[1].strip()
+        else:
+            exercise_name = input_str.strip()
+            description = ""
 
-        if workout_type == "cardio":
+        if not exercise_name:
+            print("\n  Please provide an exercise name.\n")
+            return
+
+        print(f"\n  Adding exercise: {exercise_name}")
+        if description:
+            print(f"  Description: {description}")
+
+        success, message, exercise_info = self.workout.add_custom_exercise(exercise_name, description)
+
+        if success:
+            print(f"\n  {message}\n")
+            # Show the generated form tips
+            if exercise_info:
+                print("  GENERATED FORM TIPS:")
+                for i, tip in enumerate(exercise_info.get('form_tips', [])[:5], 1):
+                    print(f"    {i}. {tip}")
+                print()
+        else:
+            print(f"\n  {message}\n")
+            if exercise_info:
+                print("  You can still use this exercise - it's already in the database!\n")
+
+    def log_exercise(self, exercise_name: str, workout_type: str):
+        """Log a single exercise with form tips and progressive overload recommendations."""
+        # Show comprehensive exercise info with form AND recommended weight/reps
+        print(self.workout.get_exercise_with_recommendations(self.user.id, exercise_name))
+
+        # Check if exercise exists
+        exercise_info = self.workout.get_exercise_info(exercise_name)
+        if not exercise_info:
+            add_it = self.get_input("Would you like to add this exercise? (y/n)", "y")
+            if add_it.lower() in ['y', 'yes']:
+                desc = self.get_input("Optional description (or press Enter to skip)", "")
+                self.add_new_exercise(f"{exercise_name} | {desc}" if desc else exercise_name)
+                exercise_info = self.workout.get_exercise_info(exercise_name)
+            else:
+                return
+
+        if workout_type == "cardio" or (exercise_info and exercise_info.get('type') == 'cardio'):
             duration = self.get_input("Duration (minutes)", "30")
             distance = self.get_input("Distance in km (optional, press Enter to skip)", "0")
 
@@ -283,11 +326,22 @@ class FitnessApp:
             )
             print(f"\n  Logged: {exercise.exercise_name} - {duration} min")
         else:
-            sets = self.get_input("Sets", "3")
-            reps = self.get_input("Reps", "10")
-            weight = self.get_input("Weight (kg)", "0")
+            # Get last performance for smart defaults
+            last_perf = self.db.get_last_exercise_weight(self.user.id, exercise_info['name'] if exercise_info else exercise_name)
 
-            exercise, exercise_info = self.workout.add_exercise(
+            if last_perf:
+                last_weight, last_reps = last_perf
+                default_weight = str(last_weight)
+                default_reps = str(last_reps)
+            else:
+                default_weight = "0"
+                default_reps = "10"
+
+            sets = self.get_input("Sets", "3")
+            reps = self.get_input(f"Reps (last time: {default_reps})", default_reps)
+            weight = self.get_input(f"Weight in kg (last time: {default_weight})", default_weight)
+
+            exercise, _ = self.workout.add_exercise(
                 workout_id=self.current_workout.id,
                 user_id=self.user.id,
                 exercise_name=exercise_name,
@@ -295,6 +349,13 @@ class FitnessApp:
                 reps=int(reps) if reps else 0,
                 weight_kg=float(weight) if weight else 0
             )
+
+            # Show if this is progressive overload
+            if last_perf:
+                old_volume = last_perf[0] * last_perf[1]
+                new_volume = float(weight) * int(reps)
+                if new_volume > old_volume:
+                    print(f"\n  PROGRESSIVE OVERLOAD! Volume: {old_volume:.0f} -> {new_volume:.0f} kg")
 
             print(f"\n  Logged: {exercise.exercise_name} - {sets}x{reps} @ {weight}kg")
 
