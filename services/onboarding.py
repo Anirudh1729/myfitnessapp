@@ -1,5 +1,6 @@
 """Onboarding service for new users."""
 
+from typing import Optional
 from database import Database, User
 from utils import calculate_bmr, calculate_tdee, calculate_target_calories, calculate_macros
 from utils.calories import get_body_fat_estimate, calculate_ideal_weight_range
@@ -217,7 +218,7 @@ Let's set up your profile to personalize your experience!
 ================================================================================
 """
 
-    def check_existing_user(self) -> User | None:
+    def check_existing_user(self) -> Optional[User]:
         """Check if a user already exists in the database."""
         return self.db.get_user()
 
