@@ -924,6 +924,302 @@ EXERCISES: Dict[str, dict] = {
             "Only using legs, not arms",
             "Standing on toes instead of heels"
         ]
+    },
+
+    # ADDITIONAL EXERCISES FOR PPLS SPLIT
+    "cable lateral raise": {
+        "name": "Cable Lateral Raise",
+        "type": "isolation",
+        "primary_muscles": ["side_delts"],
+        "secondary_muscles": [],
+        "equipment": ["cable_machine"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Stand sideways to the cable with handle in far hand",
+            "Keep a slight bend in your elbow",
+            "Raise arm out to the side until parallel with floor",
+            "Lead with your elbow, not your hand",
+            "Control the negative - don't let the cable pull you down",
+            "Keep your body still - no leaning or swaying"
+        ],
+        "common_mistakes": [
+            "Using too much weight and swinging",
+            "Raising arm too high",
+            "Leaning away from the cable"
+        ]
+    },
+    "machine lateral raise": {
+        "name": "Machine Lateral Raise",
+        "type": "isolation",
+        "primary_muscles": ["side_delts"],
+        "secondary_muscles": [],
+        "equipment": ["lateral_raise_machine"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Adjust the seat so pads rest on outer arms",
+            "Keep your back against the pad",
+            "Raise arms out to the sides until parallel",
+            "Squeeze at the top of the movement",
+            "Control the descent - don't drop the weight",
+            "Keep your traps relaxed"
+        ],
+        "common_mistakes": [
+            "Using momentum",
+            "Shrugging shoulders up",
+            "Going too heavy"
+        ]
+    },
+    "arnold press": {
+        "name": "Arnold Press",
+        "type": "compound",
+        "primary_muscles": ["front_delts", "side_delts"],
+        "secondary_muscles": ["triceps"],
+        "equipment": ["dumbbells"],
+        "difficulty": "intermediate",
+        "form_tips": [
+            "Start with dumbbells in front of shoulders, palms facing you",
+            "As you press up, rotate your palms to face forward",
+            "Press dumbbells overhead until arms are extended",
+            "Reverse the motion on the way down",
+            "Keep the movement smooth and controlled",
+            "Don't arch your back excessively"
+        ],
+        "common_mistakes": [
+            "Rushing the rotation",
+            "Not getting full range of motion",
+            "Arching the back"
+        ]
+    },
+    "close grip bench press": {
+        "name": "Close Grip Bench Press",
+        "type": "compound",
+        "primary_muscles": ["triceps"],
+        "secondary_muscles": ["chest", "front_delts"],
+        "equipment": ["barbell", "bench"],
+        "difficulty": "intermediate",
+        "form_tips": [
+            "Grip the bar with hands shoulder-width apart or slightly narrower",
+            "Keep your elbows tucked close to your body",
+            "Lower the bar to your lower chest/sternum",
+            "Press straight up, focusing on tricep contraction",
+            "Keep shoulder blades retracted",
+            "Don't let elbows flare out"
+        ],
+        "common_mistakes": [
+            "Grip too narrow (causes wrist strain)",
+            "Flaring elbows out",
+            "Lowering bar too high on chest"
+        ]
+    },
+    "upright row": {
+        "name": "Upright Row",
+        "type": "compound",
+        "primary_muscles": ["side_delts", "traps"],
+        "secondary_muscles": ["biceps", "front_delts"],
+        "equipment": ["barbell", "dumbbells"],
+        "difficulty": "intermediate",
+        "form_tips": [
+            "Grip bar with hands slightly narrower than shoulder-width",
+            "Pull the bar straight up along your body",
+            "Lead with your elbows - they should go higher than your hands",
+            "Raise until elbows are at shoulder height",
+            "Keep the bar close to your body",
+            "Lower with control"
+        ],
+        "common_mistakes": [
+            "Grip too narrow (shoulder impingement risk)",
+            "Swinging the weight",
+            "Not leading with elbows"
+        ]
+    },
+    "preacher curl": {
+        "name": "Preacher Curl",
+        "type": "isolation",
+        "primary_muscles": ["biceps"],
+        "secondary_muscles": [],
+        "equipment": ["ez_bar", "preacher_bench"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Sit with armpits at top of the pad",
+            "Keep upper arms flat against the pad throughout",
+            "Curl the weight up by flexing biceps",
+            "Squeeze hard at the top",
+            "Lower with control - don't let the weight drop",
+            "Don't swing or use momentum"
+        ],
+        "common_mistakes": [
+            "Lifting elbows off the pad",
+            "Not getting full extension at bottom",
+            "Using momentum to lift"
+        ]
+    },
+    "incline dumbbell curl": {
+        "name": "Incline Dumbbell Curl",
+        "type": "isolation",
+        "primary_muscles": ["biceps"],
+        "secondary_muscles": [],
+        "equipment": ["dumbbells", "incline_bench"],
+        "difficulty": "intermediate",
+        "form_tips": [
+            "Set bench to 45-60 degree incline",
+            "Let arms hang straight down at your sides",
+            "Curl dumbbells up while keeping upper arms stationary",
+            "Get a full stretch at the bottom",
+            "Squeeze biceps at the top",
+            "Don't swing or use momentum"
+        ],
+        "common_mistakes": [
+            "Swinging the weights",
+            "Moving upper arms forward",
+            "Not getting full stretch at bottom"
+        ]
+    },
+    "reverse pec deck": {
+        "name": "Reverse Pec Deck",
+        "type": "isolation",
+        "primary_muscles": ["rear_delts"],
+        "secondary_muscles": ["traps", "rhomboids"],
+        "equipment": ["pec_deck_machine"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Face the machine with chest against the pad",
+            "Grip handles with arms extended in front",
+            "Pull handles back in an arc, squeezing shoulder blades",
+            "Keep a slight bend in your elbows",
+            "Control the return - don't let weights slam",
+            "Focus on rear delts, not traps"
+        ],
+        "common_mistakes": [
+            "Using too much weight",
+            "Shrugging shoulders",
+            "Not getting full range of motion"
+        ]
+    },
+    "hip thrust": {
+        "name": "Hip Thrust",
+        "type": "compound",
+        "primary_muscles": ["glutes"],
+        "secondary_muscles": ["hamstrings", "core"],
+        "equipment": ["barbell", "bench"],
+        "difficulty": "intermediate",
+        "form_tips": [
+            "Sit with upper back against a bench, bar over hips",
+            "Feet flat on floor, about shoulder-width apart",
+            "Drive through heels to lift hips until body is straight",
+            "Squeeze glutes hard at the top",
+            "Keep chin tucked - don't hyperextend neck",
+            "Lower with control"
+        ],
+        "common_mistakes": [
+            "Hyperextending the lower back",
+            "Not squeezing glutes at top",
+            "Feet too close or too far from body"
+        ]
+    },
+    "standing calf raise": {
+        "name": "Standing Calf Raise",
+        "type": "isolation",
+        "primary_muscles": ["calves"],
+        "secondary_muscles": [],
+        "equipment": ["calf_raise_machine"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Stand with balls of feet on platform, heels hanging off",
+            "Keep legs straight but not locked",
+            "Lower heels as far as possible for a full stretch",
+            "Rise up onto toes as high as possible",
+            "Squeeze calves at the top",
+            "Control the descent - no bouncing"
+        ],
+        "common_mistakes": [
+            "Bouncing at the bottom",
+            "Not getting full range of motion",
+            "Bending knees"
+        ]
+    },
+    "seated calf raise": {
+        "name": "Seated Calf Raise",
+        "type": "isolation",
+        "primary_muscles": ["calves"],
+        "secondary_muscles": [],
+        "equipment": ["seated_calf_machine"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Sit with thighs under the pad, balls of feet on platform",
+            "Lower heels below the platform for a full stretch",
+            "Push through balls of feet to raise heels",
+            "Squeeze at the top of the movement",
+            "Lower with control",
+            "Seated position targets the soleus muscle"
+        ],
+        "common_mistakes": [
+            "Bouncing the weight",
+            "Not going through full range of motion",
+            "Going too fast"
+        ]
+    },
+    "shrugs": {
+        "name": "Shrugs",
+        "type": "isolation",
+        "primary_muscles": ["traps"],
+        "secondary_muscles": [],
+        "equipment": ["barbell", "dumbbells"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Hold weight at your sides with arms straight",
+            "Shrug shoulders straight up toward your ears",
+            "Squeeze traps hard at the top",
+            "Lower with control",
+            "Keep arms straight - don't bend elbows",
+            "Don't roll shoulders - straight up and down"
+        ],
+        "common_mistakes": [
+            "Rolling shoulders (can cause injury)",
+            "Using too much weight and not getting full contraction",
+            "Bending elbows"
+        ]
+    },
+    "front raise": {
+        "name": "Front Raise",
+        "type": "isolation",
+        "primary_muscles": ["front_delts"],
+        "secondary_muscles": [],
+        "equipment": ["dumbbells"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Stand with dumbbells in front of thighs",
+            "Keep a slight bend in your elbows",
+            "Raise one or both arms to shoulder height",
+            "Keep your core tight - don't swing",
+            "Lower with control",
+            "Don't raise higher than shoulder level"
+        ],
+        "common_mistakes": [
+            "Swinging the weights",
+            "Raising too high",
+            "Arching the back"
+        ]
+    },
+    "cable fly": {
+        "name": "Cable Fly",
+        "type": "isolation",
+        "primary_muscles": ["chest"],
+        "secondary_muscles": [],
+        "equipment": ["cable_machine"],
+        "difficulty": "beginner",
+        "form_tips": [
+            "Stand between cable stations with handles at chest height",
+            "Step forward slightly with one foot for balance",
+            "Keep a slight bend in your elbows throughout",
+            "Bring hands together in front of chest in an arc",
+            "Squeeze chest at the peak contraction",
+            "Control the return - feel the stretch"
+        ],
+        "common_mistakes": [
+            "Bending elbows too much",
+            "Using too much weight",
+            "Not controlling the negative"
+        ]
     }
 }
 

@@ -299,6 +299,124 @@ WORKOUT_SPLITS = {
                 "exercises": []
             }
         }
+    },
+    "ppls_shoulder_focus": {
+        "name": "Push/Pull/Legs/Shoulders (PPLS)",
+        "description": "6-day split with dedicated shoulder day. 25 sets/workout, 16 sets/muscle/week. Extra shoulder emphasis.",
+        "days_per_week": 6,
+        "volume_info": {
+            "sets_per_workout": 25,
+            "weekly_volume": {
+                "chest": 16,
+                "back": 16,
+                "side_delts": 22,
+                "front_delts": 16,
+                "rear_delts": 18,
+                "biceps": 16,
+                "triceps": 16,
+                "quads": 10,
+                "hamstrings": 8,
+                "calves": 4
+            }
+        },
+        "schedule": {
+            "Day 1": {
+                "name": "Push A (Chest Focus)",
+                "muscles": ["Chest", "Triceps", "Side Delts", "Front Delts"],
+                "total_sets": 25,
+                "exercises": [
+                    ("Bench Press", "compound", "4 sets x 6-8 reps"),
+                    ("Incline Dumbbell Press", "compound", "3 sets x 8-10 reps"),
+                    ("Cable Fly", "isolation", "3 sets x 12-15 reps"),
+                    ("Skull Crusher", "compound", "3 sets x 8-10 reps"),
+                    ("Tricep Pushdown", "isolation", "3 sets x 10-12 reps"),
+                    ("Lateral Raise", "isolation", "3 sets x 12-15 reps"),
+                    ("Cable Lateral Raise", "isolation", "3 sets x 12-15 reps"),
+                    ("Front Raise", "isolation", "3 sets x 12-15 reps")
+                ]
+            },
+            "Day 2": {
+                "name": "Pull A",
+                "muscles": ["Back", "Lats", "Biceps", "Rear Delts", "Traps"],
+                "total_sets": 25,
+                "exercises": [
+                    ("Deadlift", "compound", "4 sets x 5 reps"),
+                    ("Barbell Row", "compound", "3 sets x 8-10 reps"),
+                    ("Lat Pulldown", "compound", "3 sets x 10-12 reps"),
+                    ("Barbell Curl", "isolation", "3 sets x 8-10 reps"),
+                    ("Hammer Curl", "isolation", "3 sets x 10-12 reps"),
+                    ("Face Pull", "isolation", "3 sets x 15-20 reps"),
+                    ("Rear Delt Fly", "isolation", "3 sets x 12-15 reps"),
+                    ("Shrugs", "isolation", "3 sets x 10-12 reps")
+                ]
+            },
+            "Day 3": {
+                "name": "Legs",
+                "muscles": ["Quads", "Hamstrings", "Glutes", "Calves"],
+                "total_sets": 25,
+                "exercises": [
+                    ("Squat", "compound", "4 sets x 6-8 reps"),
+                    ("Leg Press", "compound", "3 sets x 10-12 reps"),
+                    ("Leg Extension", "isolation", "3 sets x 12-15 reps"),
+                    ("Romanian Deadlift", "compound", "4 sets x 8-10 reps"),
+                    ("Leg Curl", "isolation", "4 sets x 10-12 reps"),
+                    ("Standing Calf Raise", "isolation", "2 sets x 12-15 reps"),
+                    ("Seated Calf Raise", "isolation", "2 sets x 15-20 reps"),
+                    ("Hip Thrust", "compound", "3 sets x 10-12 reps")
+                ]
+            },
+            "Day 4": {
+                "name": "Shoulders (Emphasis Day)",
+                "muscles": ["Side Delts", "Front Delts", "Rear Delts", "Traps"],
+                "total_sets": 25,
+                "exercises": [
+                    ("Overhead Press", "compound", "4 sets x 6-8 reps"),
+                    ("Arnold Press", "compound", "2 sets x 10-12 reps"),
+                    ("Lateral Raise", "isolation", "4 sets x 12-15 reps"),
+                    ("Cable Lateral Raise", "isolation", "3 sets x 12-15 reps"),
+                    ("Machine Lateral Raise", "isolation", "3 sets x 12-15 reps"),
+                    ("Face Pull", "isolation", "3 sets x 15-20 reps"),
+                    ("Rear Delt Fly", "isolation", "3 sets x 12-15 reps"),
+                    ("Shrugs", "isolation", "3 sets x 10-12 reps")
+                ]
+            },
+            "Day 5": {
+                "name": "Push B (Tricep Focus)",
+                "muscles": ["Chest", "Triceps", "Side Delts", "Front Delts"],
+                "total_sets": 25,
+                "exercises": [
+                    ("Incline Bench Press", "compound", "3 sets x 6-8 reps"),
+                    ("Dumbbell Bench Press", "compound", "3 sets x 8-10 reps"),
+                    ("Close Grip Bench Press", "compound", "4 sets x 8-10 reps"),
+                    ("Skull Crusher", "isolation", "3 sets x 10-12 reps"),
+                    ("Overhead Tricep Extension", "isolation", "3 sets x 10-12 reps"),
+                    ("Lateral Raise", "isolation", "3 sets x 12-15 reps"),
+                    ("Upright Row", "compound", "3 sets x 10-12 reps"),
+                    ("Front Raise", "isolation", "3 sets x 12-15 reps")
+                ]
+            },
+            "Day 6": {
+                "name": "Pull B",
+                "muscles": ["Back", "Lats", "Biceps", "Rear Delts", "Traps"],
+                "total_sets": 25,
+                "exercises": [
+                    ("Pull-Up", "compound", "3 sets x 6-10 reps"),
+                    ("Seated Cable Row", "compound", "3 sets x 10-12 reps"),
+                    ("Dumbbell Curl", "isolation", "4 sets x 8-10 reps"),
+                    ("Preacher Curl", "isolation", "3 sets x 10-12 reps"),
+                    ("Incline Dumbbell Curl", "isolation", "3 sets x 10-12 reps"),
+                    ("Face Pull", "isolation", "3 sets x 15-20 reps"),
+                    ("Reverse Pec Deck", "isolation", "3 sets x 12-15 reps"),
+                    ("Shrugs", "isolation", "3 sets x 10-12 reps")
+                ]
+            },
+            "Day 7": {
+                "name": "Rest",
+                "muscles": [],
+                "total_sets": 0,
+                "exercises": []
+            }
+        }
     }
 }
 
@@ -359,8 +477,21 @@ class PlannerService:
 Training Days: {split['days_per_week']}/week
 
 """
+        # Show volume info if available
+        if 'volume_info' in split:
+            vol = split['volume_info']
+            output += f"Sets per Workout: {vol['sets_per_workout']}\n\n"
+            output += "WEEKLY VOLUME BY MUSCLE GROUP:\n"
+            output += "-" * 40 + "\n"
+            for muscle, sets in vol['weekly_volume'].items():
+                muscle_name = muscle.replace('_', ' ').title()
+                output += f"  {muscle_name:<15} {sets} sets\n"
+            output += "-" * 40 + "\n"
+
         for day_key, day_data in split['schedule'].items():
-            output += f"\n{day_key}: {day_data['name']}\n"
+            total_sets = day_data.get('total_sets', '')
+            sets_str = f" ({total_sets} sets)" if total_sets else ""
+            output += f"\n{day_key}: {day_data['name']}{sets_str}\n"
             output += "-" * 40 + "\n"
 
             if day_data['muscles']:
