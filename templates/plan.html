@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Workout Plan - My Fitness App{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1>Workout Plan</h1>
+    <p class="subtitle">Your training schedule</p>
+</div>
+
+<!-- Current Split -->
+{% if current_split %}
+<div class="workout-summary fade-in">
+    <h3>{{ current_split.name }}</h3>
+    <p>{{ current_split.description }}</p>
+    <div class="workout-summary-stats mt-16">
+        <div class="workout-summary-stat">
+            <div class="value">{{ current_split.days_per_week }}</div>
+            <div class="label">Days/Week</div>
+        </div>
+        {% if current_split.volume_info %}
+        <div class="workout-summary-stat">
+            <div class="value">{{ current_split.volume_info.sets_per_workout }}</div>
+            <div class="label">Sets/Workout</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Weekly Schedule -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Weekly Schedule</span>
+    </div>
+
+    {% if weekly_schedule %}
+        {% for day_name, day_info in weekly_schedule.items() %}
+        <div class="list-item" {% if day_info.exercises %}onclick="showDayDetail('{{ day_name }}')"{% endif %}>
+            <div class="list-item-icon">
+                {% if day_info.is_rest %}😴{% else %}💪{% endif %}
+            </div>
+            <div class="list-item-content">
+                <div class="list-item-title">{{ day_name }}</div>
+                <div class="list-item-subtitle">
+                    {% if day_info.is_rest %}
+                        Rest Day
+                    {% else %}
+                        {{ day_info.name }} - {{ day_info.exercises|length if day_info.exercises else 0 }} exercises
+                    {% endif %}
+                </div>
+            </div>
+            {% if day_info.exercises %}
+            <span class="list-item-action">→</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-center text-muted" style="padding: 20px;">
+            No schedule set up yet
+        </p>
+    {% endif %}
+</div>
+
+<!-- Change Split -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Change Split</span>
+    </div>
+
+    <div class="form-group">
+        <select id="split-select" class="form-select">
+            <option value="ppls_shoulder_focus" {% if current_split and current_split.id == 'ppls_shoulder_focus' %}selected{% endif %}>
+                Push/Pull/Legs/Shoulders (6 days)
+            </option>
+            <option value="ppl" {% if current_split and current_split.id == 'ppl' %}selected{% endif %}>
+                Push/Pull/Legs (6 days)
+            </option>
+            <option value="upper_lower" {% if current_split and current_split.id == 'upper_lower' %}selected{% endif %}>
+                Upper/Lower (4 days)
+            </option>
+            <option value="full_body" {% if current_split and current_split.id == 'full_body' %}selected{% endif %}>
+                Full Body (3 days)
+            </option>
+            <option value="bro_split" {% if current_split and current_split.id == 'bro_split' %}selected{% endif %}>
+                Bro Split (5 days)
+            </option>
+        </select>
+    </div>
+
+    <button onclick="changeSplit()" class="btn btn-secondary btn-sm">
+        Update Split
+    </button>
+</div>
+
+<!-- Volume Info -->
+{% if current_split and current_split.volume_info %}
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Weekly Volume</span>
+        <span class="card-icon">📊</span>
+    </div>
+
+    <p class="text-muted mb-16">Sets per muscle group per week:</p>
+
+    {% for muscle, sets in current_split.volume_info.weekly_volume.items() %}
+    <div class="list-item">
+        <div class="list-item-content">
+            <div class="list-item-title">{{ muscle|title }}</div>
+        </div>
+        <span class="tag tag-primary">{{ sets }} sets</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Day Detail Modal -->
+<div id="day-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="day-modal-title">Day</h2>
+            <button class="modal-close" onclick="closeDayModal()">&times;</button>
+        </div>
+
+        <div id="day-exercises"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const weeklySchedule = {{ weekly_schedule|tojson|safe if weekly_schedule else '{}' }};
+
+function showDayDetail(dayName) {
+    const day = weeklySchedule[dayName];
+    if (!day || !day.exercises) return;
+
+    document.getElementById('day-modal-title').textContent = `${dayName}: ${day.name}`;
+
+    const exercisesDiv = document.getElementById('day-exercises');
+    exercisesDiv.innerHTML = day.exercises.map(ex => `
+        <div class="list-item">
+            <div class="list-item-icon">🏋️</div>
+            <div class="list-item-content">
+                <div class="list-item-title">${ex.name}</div>
+                <div class="list-item-subtitle">${ex.sets} sets × ${ex.reps} reps</div>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('day-modal').classList.add('active');
+}
+
+function closeDayModal() {
+    document.getElementById('day-modal').classList.remove('active');
+}
+
+async function changeSplit() {
+    const split = document.getElementById('split-select').value;
+
+    try {
+        const response = await fetch('/plan/change-split', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ split: split })
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        }
+    } catch (err) {
+        console.error('Error changing split:', err);
+    }
+}
+
+document.getElementById('day-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeDayModal();
+});
+</script>
+{% endblock %}

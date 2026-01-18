@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block title %}Workout - My Fitness App{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1>Active Workout</h1>
+    <p class="subtitle">Log your exercises</p>
+</div>
+
+<!-- Workout Summary -->
+<div class="workout-summary fade-in">
+    <h3>Current Session</h3>
+    <div class="workout-summary-stats">
+        <div class="workout-summary-stat">
+            <div class="value" id="exercise-count">{{ exercises_logged|length }}</div>
+            <div class="label">Exercises</div>
+        </div>
+        <div class="workout-summary-stat">
+            <div class="value" id="set-count">{{ exercises_logged|sum(attribute='sets') if exercises_logged else 0 }}</div>
+            <div class="label">Total Sets</div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Planned Exercises -->
+{% if todays_workout and todays_workout.exercises %}
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Today's Plan: {{ todays_workout.name }}</span>
+    </div>
+
+    {% for exercise in todays_workout.exercises %}
+    <div class="list-item exercise-suggestion" onclick="selectExercise('{{ exercise.name }}')">
+        <div class="list-item-icon">🏋️</div>
+        <div class="list-item-content">
+            <div class="list-item-title">{{ exercise.name }}</div>
+            <div class="list-item-subtitle">{{ exercise.sets }} sets × {{ exercise.reps }} reps</div>
+        </div>
+        <span class="list-item-action">+</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Search & Add Exercise -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Add Exercise</span>
+    </div>
+
+    <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="exercise-search"
+               placeholder="Search or add exercise..." oninput="searchExercises(this.value)">
+    </div>
+
+    <div id="search-results"></div>
+</div>
+
+<!-- Logged Exercises -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Logged Exercises</span>
+    </div>
+
+    <div id="logged-exercises">
+        {% if exercises_logged %}
+            {% for ex in exercises_logged %}
+            <div class="list-item">
+                <div class="list-item-icon">✅</div>
+                <div class="list-item-content">
+                    <div class="list-item-title">{{ ex.name }}</div>
+                    <div class="list-item-subtitle">{{ ex.weight }}kg × {{ ex.reps }} reps × {{ ex.sets }} sets</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center text-muted" id="no-exercises-msg">No exercises logged yet</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Finish Workout -->
+<form method="POST" action="{{ url_for('finish_workout') }}" class="fade-in">
+    <button type="submit" class="btn btn-success">
+        <span class="btn-icon">✓</span>
+        Finish Workout
+    </button>
+</form>
+
+<!-- Exercise Detail Modal -->
+<div id="exercise-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-exercise-name">Exercise</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+
+        <div id="exercise-info">
+            <!-- Populated by JS -->
+        </div>
+
+        <form id="log-exercise-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Weight (kg)</label>
+                    <input type="number" name="weight" id="input-weight" class="form-input"
+                           step="0.5" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Reps</label>
+                    <input type="number" name="reps" id="input-reps" class="form-input"
+                           placeholder="10">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Sets</label>
+                <div class="option-group">
+                    <label class="option-btn" onclick="setSets(1)">1</label>
+                    <label class="option-btn" onclick="setSets(2)">2</label>
+                    <label class="option-btn selected" onclick="setSets(3)">3</label>
+                    <label class="option-btn" onclick="setSets(4)">4</label>
+                </div>
+            </div>
+
+            <input type="hidden" name="sets" id="input-sets" value="3">
+            <input type="hidden" name="exercise" id="input-exercise">
+
+            <button type="submit" class="btn btn-primary">
+                <span class="btn-icon">+</span>
+                Log Exercise
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Custom Exercise Modal -->
+<div id="add-exercise-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Exercise</h2>
+            <button class="modal-close" onclick="closeAddModal()">&times;</button>
+        </div>
+
+        <form id="add-exercise-form">
+            <div class="form-group">
+                <label class="form-label">Exercise Name</label>
+                <input type="text" name="name" id="new-exercise-name" class="form-input"
+                       placeholder="e.g., Cable Face Pull" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description (optional)</label>
+                <textarea name="description" id="new-exercise-desc" class="form-input"
+                          placeholder="Describe the exercise for better form tips..."
+                          rows="3"></textarea>
+            </div>
+
+            <p class="text-muted mb-16">
+                The app will automatically generate form tips based on the exercise name and description.
+            </p>
+
+            <button type="submit" class="btn btn-primary">
+                <span class="btn-icon">+</span>
+                Add Exercise
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentExercise = null;
+let currentSets = 3;
+
+async function searchExercises(query) {
+    const resultsDiv = document.getElementById('search-results');
+
+    if (query.length < 2) {
+        resultsDiv.innerHTML = '';
+        return;
+    }
+
+    try {
+        const response = await fetch(`/exercise/search?q=${encodeURIComponent(query)}`);
+        const exercises = await response.json();
+
+        if (exercises.length === 0) {
+            resultsDiv.innerHTML = `
+                <div class="list-item" onclick="showAddExerciseModal('${query}')">
+                    <div class="list-item-icon">➕</div>
+                    <div class="list-item-content">
+                        <div class="list-item-title">Add "${query}"</div>
+                        <div class="list-item-subtitle">Create new custom exercise</div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        resultsDiv.innerHTML = exercises.slice(0, 5).map(ex => `
+            <div class="list-item" onclick="selectExercise('${ex.name}')">
+                <div class="list-item-icon">🏋️</div>
+                <div class="list-item-content">
+                    <div class="list-item-title">${ex.name}</div>
+                    <div class="list-item-subtitle">${ex.primary_muscles.join(', ')}</div>
+                </div>
+                <span class="list-item-action">+</span>
+            </div>
+        `).join('') + `
+            <div class="list-item" onclick="showAddExerciseModal('${query}')">
+                <div class="list-item-icon">➕</div>
+                <div class="list-item-content">
+                    <div class="list-item-title">Add new exercise</div>
+                    <div class="list-item-subtitle">Not in the list? Add your own</div>
+                </div>
+            </div>
+        `;
+    } catch (err) {
+        console.error('Error searching:', err);
+    }
+}
+
+async function selectExercise(name) {
+    currentExercise = name;
+    document.getElementById('modal-exercise-name').textContent = name;
+    document.getElementById('input-exercise').value = name;
+
+    // Fetch exercise info with recommendations
+    try {
+        const response = await fetch(`/exercise/info/${encodeURIComponent(name)}`);
+        const info = await response.json();
+
+        const infoDiv = document.getElementById('exercise-info');
+        infoDiv.innerHTML = `
+            <div class="exercise-tips">
+                <h4>Form Tips</h4>
+                <ul>
+                    ${info.form_tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+
+            ${info.common_mistakes && info.common_mistakes.length > 0 ? `
+            <div class="exercise-mistakes">
+                <h4>Avoid</h4>
+                <ul>
+                    ${info.common_mistakes.map(m => `<li>${m}</li>`).join('')}
+                </ul>
+            </div>
+            ` : ''}
+
+            ${info.last_performance ? `
+            <div class="exercise-recommendation">
+                <h4>Last: ${info.last_performance.weight}kg × ${info.last_performance.reps} reps</h4>
+                <p style="font-size: 14px; margin-top: 8px;">
+                    Progressive overload: Try ${info.last_performance.weight + 2.5}kg or +1-2 reps
+                </p>
+            </div>
+            ` : ''}
+        `;
+
+        // Pre-fill with last performance
+        if (info.last_performance) {
+            document.getElementById('input-weight').value = info.last_performance.weight;
+            document.getElementById('input-reps').value = info.last_performance.reps;
+        } else {
+            document.getElementById('input-weight').value = '';
+            document.getElementById('input-reps').value = '';
+        }
+    } catch (err) {
+        console.error('Error fetching exercise info:', err);
+    }
+
+    document.getElementById('exercise-modal').classList.add('active');
+}
+
+function setSets(num) {
+    currentSets = num;
+    document.getElementById('input-sets').value = num;
+    document.querySelectorAll('#log-exercise-form .option-btn').forEach((btn, i) => {
+        btn.classList.toggle('selected', i + 1 === num);
+    });
+}
+
+function closeModal() {
+    document.getElementById('exercise-modal').classList.remove('active');
+}
+
+function showAddExerciseModal(name = '') {
+    document.getElementById('new-exercise-name').value = name;
+    document.getElementById('new-exercise-desc').value = '';
+    document.getElementById('add-exercise-modal').classList.add('active');
+}
+
+function closeAddModal() {
+    document.getElementById('add-exercise-modal').classList.remove('active');
+}
+
+// Log exercise form submission
+document.getElementById('log-exercise-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const data = {
+        exercise: document.getElementById('input-exercise').value,
+        weight: document.getElementById('input-weight').value || 0,
+        reps: document.getElementById('input-reps').value || 0,
+        sets: document.getElementById('input-sets').value || 3
+    };
+
+    try {
+        const response = await fetch('/workout/log-exercise', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            // Add to logged exercises list
+            const loggedDiv = document.getElementById('logged-exercises');
+            const noExercisesMsg = document.getElementById('no-exercises-msg');
+            if (noExercisesMsg) noExercisesMsg.remove();
+
+            loggedDiv.insertAdjacentHTML('beforeend', `
+                <div class="list-item fade-in">
+                    <div class="list-item-icon">✅</div>
+                    <div class="list-item-content">
+                        <div class="list-item-title">${data.exercise}</div>
+                        <div class="list-item-subtitle">${data.weight}kg × ${data.reps} reps × ${data.sets} sets</div>
+                    </div>
+                </div>
+            `);
+
+            // Update counts
+            const exerciseCount = document.getElementById('exercise-count');
+            exerciseCount.textContent = parseInt(exerciseCount.textContent) + 1;
+
+            const setCount = document.getElementById('set-count');
+            setCount.textContent = parseInt(setCount.textContent) + parseInt(data.sets);
+
+            closeModal();
+
+            // Clear search
+            document.getElementById('exercise-search').value = '';
+            document.getElementById('search-results').innerHTML = '';
+        }
+    } catch (err) {
+        console.error('Error logging exercise:', err);
+    }
+});
+
+// Add new exercise form submission
+document.getElementById('add-exercise-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const data = {
+        name: document.getElementById('new-exercise-name').value,
+        description: document.getElementById('new-exercise-desc').value
+    };
+
+    try {
+        const response = await fetch('/exercise/add', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            closeAddModal();
+            // Select the newly added exercise
+            selectExercise(data.name);
+        }
+    } catch (err) {
+        console.error('Error adding exercise:', err);
+    }
+});
+
+// Close modals on background click
+document.getElementById('exercise-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+document.getElementById('add-exercise-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddModal();
+});
+</script>
+{% endblock %}

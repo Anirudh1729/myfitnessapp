@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Progress - My Fitness App{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1>Progress</h1>
+    <p class="subtitle">Track your fitness journey</p>
+</div>
+
+<!-- Current Stats -->
+<div class="stats-grid fade-in">
+    <div class="stat-card">
+        <div class="stat-value">{{ user.weight }}</div>
+        <div class="stat-label">Current (kg)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ user.target_weight or user.weight }}</div>
+        <div class="stat-label">Target (kg)</div>
+    </div>
+</div>
+
+<!-- Log Weight -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Log Weight</span>
+        <span class="card-icon">⚖️</span>
+    </div>
+
+    <form id="weight-form">
+        <div class="input-group">
+            <input type="number" name="weight" id="weight-input" class="form-input"
+                   step="0.1" placeholder="{{ user.weight }}" value="{{ user.weight }}">
+            <span class="input-unit">kg</span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm mt-16">Log Weight</button>
+    </form>
+</div>
+
+<!-- Weekly Workouts -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">This Week's Workouts</span>
+        <span class="card-icon">💪</span>
+    </div>
+
+    {% if weekly_workouts %}
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ weekly_workouts.total_workouts or 0 }}</div>
+                <div class="stat-label">Workouts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ weekly_workouts.total_sets or 0 }}</div>
+                <div class="stat-label">Total Sets</div>
+            </div>
+        </div>
+
+        {% if weekly_workouts.by_day %}
+        <div class="mt-16">
+            {% for day, data in weekly_workouts.by_day.items() %}
+            <div class="list-item">
+                <div class="list-item-icon">{% if data.completed %}✅{% else %}⬜{% endif %}</div>
+                <div class="list-item-content">
+                    <div class="list-item-title">{{ day }}</div>
+                    <div class="list-item-subtitle">{{ data.type or 'Rest' }}</div>
+                </div>
+                {% if data.exercises_count %}
+                <span class="tag">{{ data.exercises_count }} exercises</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% else %}
+        <p class="text-center text-muted" style="padding: 20px;">
+            No workout data for this week yet
+        </p>
+    {% endif %}
+</div>
+
+<!-- Weekly Calories -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">This Week's Calories</span>
+        <span class="card-icon">🔥</span>
+    </div>
+
+    {% if weekly_calories %}
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ weekly_calories.average or 0 }}</div>
+                <div class="stat-label">Daily Average</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ weekly_calories.total or 0 }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-center text-muted" style="padding: 20px;">
+            No calorie data for this week yet
+        </p>
+    {% endif %}
+</div>
+
+<!-- Weight History -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Weight History</span>
+        <span class="card-icon">📈</span>
+    </div>
+
+    {% if weight_history %}
+        {% for entry in weight_history[:10] %}
+        <div class="list-item">
+            <div class="list-item-content">
+                <div class="list-item-title">{{ entry.weight }} kg</div>
+                <div class="list-item-subtitle">{{ entry.date }}</div>
+            </div>
+            {% if loop.index > 1 %}
+                {% set diff = entry.weight - weight_history[loop.index - 2].weight %}
+                <span class="tag {% if diff < 0 %}tag-primary{% endif %}">
+                    {% if diff > 0 %}+{% endif %}{{ "%.1f"|format(diff) }} kg
+                </span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-center text-muted" style="padding: 20px;">
+            No weight history yet. Log your first weigh-in above!
+        </p>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('weight-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const weight = document.getElementById('weight-input').value;
+
+    try {
+        const response = await fetch('/progress/log-weight', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ weight: weight })
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        }
+    } catch (err) {
+        console.error('Error logging weight:', err);
+    }
+});
+</script>
+{% endblock %}

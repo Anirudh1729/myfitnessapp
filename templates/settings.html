@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - My Fitness App{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1>Settings</h1>
+    <p class="subtitle">Manage your profile</p>
+</div>
+
+<!-- Profile Info -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Profile</span>
+        <span class="card-icon">👤</span>
+    </div>
+
+    <form id="profile-form">
+        <div class="form-group">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" class="form-input" value="{{ user.name }}">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Age</label>
+                <input type="number" name="age" class="form-input" value="{{ user.age }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Gender</label>
+                <select name="gender" class="form-select">
+                    <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                    <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Weight (kg)</label>
+                <input type="number" name="weight" class="form-input" step="0.1" value="{{ user.weight }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Height (cm)</label>
+                <input type="number" name="height" class="form-input" value="{{ user.height }}">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm">Save Profile</button>
+    </form>
+</div>
+
+<!-- Goals -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Goals</span>
+        <span class="card-icon">🎯</span>
+    </div>
+
+    <form id="goals-form">
+        <div class="form-group">
+            <label class="form-label">Goal</label>
+            <select name="goal" class="form-select">
+                <option value="build_muscle" {% if user.goal == 'build_muscle' %}selected{% endif %}>Build Muscle</option>
+                <option value="lose_fat" {% if user.goal == 'lose_fat' %}selected{% endif %}>Lose Fat</option>
+                <option value="recomp" {% if user.goal == 'recomp' %}selected{% endif %}>Recomposition</option>
+                <option value="maintain" {% if user.goal == 'maintain' %}selected{% endif %}>Maintain</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Target Weight (kg)</label>
+            <input type="number" name="target_weight" class="form-input" step="0.1"
+                   value="{{ user.target_weight or user.weight }}">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Activity Level</label>
+            <select name="activity_level" class="form-select">
+                <option value="sedentary" {% if user.activity_level == 'sedentary' %}selected{% endif %}>Sedentary</option>
+                <option value="light" {% if user.activity_level == 'light' %}selected{% endif %}>Lightly Active</option>
+                <option value="moderate" {% if user.activity_level == 'moderate' %}selected{% endif %}>Moderately Active</option>
+                <option value="active" {% if user.activity_level == 'active' %}selected{% endif %}>Very Active</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm">Save Goals</button>
+    </form>
+</div>
+
+<!-- Training -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Training</span>
+        <span class="card-icon">🏋️</span>
+    </div>
+
+    <form id="training-form">
+        <div class="form-group">
+            <label class="form-label">Workout Split</label>
+            <select name="workout_split" class="form-select">
+                <option value="ppls_shoulder_focus" {% if user.workout_split == 'ppls_shoulder_focus' %}selected{% endif %}>
+                    Push/Pull/Legs/Shoulders (6 days)
+                </option>
+                <option value="ppl" {% if user.workout_split == 'ppl' %}selected{% endif %}>
+                    Push/Pull/Legs (6 days)
+                </option>
+                <option value="upper_lower" {% if user.workout_split == 'upper_lower' %}selected{% endif %}>
+                    Upper/Lower (4 days)
+                </option>
+                <option value="full_body" {% if user.workout_split == 'full_body' %}selected{% endif %}>
+                    Full Body (3 days)
+                </option>
+                <option value="bro_split" {% if user.workout_split == 'bro_split' %}selected{% endif %}>
+                    Bro Split (5 days)
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Experience Level</label>
+            <select name="experience_level" class="form-select">
+                <option value="beginner" {% if user.experience_level == 'beginner' %}selected{% endif %}>Beginner</option>
+                <option value="intermediate" {% if user.experience_level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+                <option value="advanced" {% if user.experience_level == 'advanced' %}selected{% endif %}>Advanced</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm">Save Training</button>
+    </form>
+</div>
+
+<!-- App Info -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">About</span>
+        <span class="card-icon">ℹ️</span>
+    </div>
+
+    <p class="text-muted">My Fitness App v1.0</p>
+    <p class="text-muted">Your personal fitness companion</p>
+
+    <div class="mt-16">
+        <p class="text-muted" style="font-size: 12px;">
+            Add to Home Screen: In Safari, tap the share icon and select "Add to Home Screen" for the best experience.
+        </p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function saveSettings(formId, fields) {
+    const form = document.getElementById(formId);
+    const data = {};
+
+    fields.forEach(field => {
+        const input = form.querySelector(`[name="${field}"]`);
+        if (input) {
+            data[field] = input.type === 'number' ? parseFloat(input.value) : input.value;
+        }
+    });
+
+    try {
+        const response = await fetch('/settings/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert('Settings saved!');
+        }
+    } catch (err) {
+        console.error('Error saving settings:', err);
+    }
+}
+
+document.getElementById('profile-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    saveSettings('profile-form', ['name', 'age', 'gender', 'weight', 'height']);
+});
+
+document.getElementById('goals-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    saveSettings('goals-form', ['goal', 'target_weight', 'activity_level']);
+});
+
+document.getElementById('training-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    saveSettings('training-form', ['workout_split', 'experience_level']);
+});
+</script>
+{% endblock %}

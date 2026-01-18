@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Food - My Fitness App{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1>Food Tracking</h1>
+    <p class="subtitle">Log your meals and track calories</p>
+</div>
+
+<!-- Today's Calories -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Today's Calories</span>
+        <span class="card-icon">🔥</span>
+    </div>
+
+    <div class="calorie-ring">
+        <svg width="160" height="160">
+            <circle class="bg" cx="80" cy="80" r="68"></circle>
+            <circle class="progress" cx="80" cy="80" r="68"
+                stroke-dasharray="427"
+                stroke-dashoffset="{{ 427 - (427 * min(total_calories / calorie_goal, 1)) if calorie_goal else 427 }}">
+            </circle>
+        </svg>
+        <div class="center">
+            <div class="value">{{ total_calories }}</div>
+            <div class="label">of {{ calorie_goal }} kcal</div>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" style="color: {% if total_calories < calorie_goal %}var(--success){% else %}var(--danger){% endif %}">
+                {{ calorie_goal - total_calories }}
+            </div>
+            <div class="stat-label">Remaining</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ today_food|length }}</div>
+            <div class="stat-label">Meals Logged</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add -->
+<button onclick="showLogFoodModal()" class="btn btn-primary mb-24 fade-in">
+    <span class="btn-icon">+</span>
+    Log Food
+</button>
+
+<!-- Today's Food -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Today's Meals</span>
+    </div>
+
+    <div id="food-list">
+        {% if today_food %}
+            {% for food in today_food %}
+            <div class="list-item">
+                <div class="list-item-icon">{% if food.is_homemade %}🏠{% else %}🛵{% endif %}</div>
+                <div class="list-item-content">
+                    <div class="list-item-title">{{ food.name }}</div>
+                    <div class="list-item-subtitle">{{ food.meal_type|title }} • P: {{ food.protein }}g C: {{ food.carbs }}g F: {{ food.fat }}g</div>
+                </div>
+                <span class="tag">{{ food.calories }} kcal</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center text-muted" style="padding: 20px;" id="no-food-msg">No food logged yet today</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Log Food Modal -->
+<div id="food-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Log Food</h2>
+            <button class="modal-close" onclick="closeFoodModal()">&times;</button>
+        </div>
+
+        <form id="log-food-form">
+            <div class="form-group">
+                <label class="form-label">What did you eat?</label>
+                <input type="text" name="name" id="food-name" class="form-input"
+                       placeholder="e.g., Chicken rice bowl" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Meal Type</label>
+                <div class="option-group">
+                    <label class="option-btn" data-meal="breakfast">🌅 Breakfast</label>
+                    <label class="option-btn selected" data-meal="lunch">☀️ Lunch</label>
+                    <label class="option-btn" data-meal="dinner">🌙 Dinner</label>
+                    <label class="option-btn" data-meal="snack">🍎 Snack</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Source</label>
+                <div class="option-group">
+                    <label class="option-btn selected" data-source="homemade">🏠 Homemade</label>
+                    <label class="option-btn" data-source="ordered">🛵 Ordered</label>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-secondary mb-16" onclick="estimateCalories()">
+                ✨ Estimate Calories
+            </button>
+
+            <div id="calorie-estimate" style="display: none;" class="card mb-16">
+                <h4>Estimated Nutrition</h4>
+                <div class="stats-grid mt-16">
+                    <div class="stat-card">
+                        <div class="stat-value" id="est-calories">0</div>
+                        <div class="stat-label">Calories</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="est-protein">0g</div>
+                        <div class="stat-label">Protein</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Calories</label>
+                    <input type="number" name="calories" id="food-calories" class="form-input" placeholder="500">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Protein (g)</label>
+                    <input type="number" name="protein" id="food-protein" class="form-input" placeholder="30">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Carbs (g)</label>
+                    <input type="number" name="carbs" id="food-carbs" class="form-input" placeholder="50">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fat (g)</label>
+                    <input type="number" name="fat" id="food-fat" class="form-input" placeholder="15">
+                </div>
+            </div>
+
+            <input type="hidden" name="meal_type" id="food-meal-type" value="lunch">
+            <input type="hidden" name="is_homemade" id="food-is-homemade" value="true">
+
+            <button type="submit" class="btn btn-primary">
+                <span class="btn-icon">+</span>
+                Log Food
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentMealType = 'lunch';
+let isHomemade = true;
+
+function showLogFoodModal() {
+    document.getElementById('food-modal').classList.add('active');
+}
+
+function closeFoodModal() {
+    document.getElementById('food-modal').classList.remove('active');
+    document.getElementById('calorie-estimate').style.display = 'none';
+}
+
+// Meal type selection
+document.querySelectorAll('[data-meal]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-meal]').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        currentMealType = this.dataset.meal;
+        document.getElementById('food-meal-type').value = currentMealType;
+    });
+});
+
+// Source selection
+document.querySelectorAll('[data-source]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-source]').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        isHomemade = this.dataset.source === 'homemade';
+        document.getElementById('food-is-homemade').value = isHomemade;
+    });
+});
+
+async function estimateCalories() {
+    const dishName = document.getElementById('food-name').value;
+    if (!dishName) {
+        alert('Please enter what you ate first');
+        return;
+    }
+
+    try {
+        const response = await fetch('/food/estimate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                dish: dishName,
+                is_homemade: isHomemade
+            })
+        });
+
+        const estimate = await response.json();
+
+        // Show estimate
+        document.getElementById('calorie-estimate').style.display = 'block';
+        document.getElementById('est-calories').textContent = estimate.calories;
+        document.getElementById('est-protein').textContent = estimate.protein + 'g';
+
+        // Fill in form
+        document.getElementById('food-calories').value = estimate.calories;
+        document.getElementById('food-protein').value = estimate.protein;
+        document.getElementById('food-carbs').value = estimate.carbs;
+        document.getElementById('food-fat').value = estimate.fat;
+    } catch (err) {
+        console.error('Error estimating calories:', err);
+    }
+}
+
+document.getElementById('log-food-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const data = {
+        name: document.getElementById('food-name').value,
+        calories: document.getElementById('food-calories').value || 0,
+        protein: document.getElementById('food-protein').value || 0,
+        carbs: document.getElementById('food-carbs').value || 0,
+        fat: document.getElementById('food-fat').value || 0,
+        meal_type: currentMealType,
+        is_homemade: isHomemade
+    };
+
+    try {
+        const response = await fetch('/food/log', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            // Reload to show updated totals
+            window.location.reload();
+        }
+    } catch (err) {
+        console.error('Error logging food:', err);
+    }
+});
+
+document.getElementById('food-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeFoodModal();
+});
+</script>
+{% endblock %}

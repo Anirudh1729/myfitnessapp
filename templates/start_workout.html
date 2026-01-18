@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Start Workout - My Fitness App{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <a href="{{ url_for('workout_menu') }}" class="page-header-back">← Back</a>
+    <h1>Start Workout</h1>
+    <p class="subtitle">Choose your workout type</p>
+</div>
+
+{% if todays_workout %}
+<div class="workout-summary fade-in">
+    <h3>Today's Plan: {{ todays_workout.name }}</h3>
+    <p>{{ todays_workout.description }}</p>
+</div>
+{% endif %}
+
+<form method="POST" action="{{ url_for('start_workout') }}">
+    <div class="card fade-in">
+        <h3 class="mb-16">Workout Type</h3>
+
+        <div class="option-group">
+            <label class="option-btn selected">
+                <input type="radio" name="workout_type" value="strength" checked>
+                🏋️ Strength
+            </label>
+            <label class="option-btn">
+                <input type="radio" name="workout_type" value="cardio">
+                🏃 Cardio
+            </label>
+            <label class="option-btn">
+                <input type="radio" name="workout_type" value="hiit">
+                ⚡ HIIT
+            </label>
+            <label class="option-btn">
+                <input type="radio" name="workout_type" value="flexibility">
+                🧘 Flexibility
+            </label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary fade-in">
+        <span class="btn-icon">🚀</span>
+        Start Workout
+    </button>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const group = this.closest('.option-group');
+        group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+    });
+});
+</script>
+{% endblock %}

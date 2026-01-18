@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - My Fitness App{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1>Hey, {{ user.name }}!</h1>
+    <p class="subtitle">Ready to crush your goals today?</p>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions fade-in">
+    <a href="{{ url_for('start_workout') }}" class="quick-action">
+        <div class="quick-action-icon">🏋️</div>
+        <div class="quick-action-label">Start Workout</div>
+    </a>
+    <a href="{{ url_for('food_menu') }}" class="quick-action">
+        <div class="quick-action-icon">🍽️</div>
+        <div class="quick-action-label">Log Food</div>
+    </a>
+    <a href="{{ url_for('progress') }}" class="quick-action">
+        <div class="quick-action-icon">📊</div>
+        <div class="quick-action-label">Progress</div>
+    </a>
+    <a href="{{ url_for('workout_plan') }}" class="quick-action">
+        <div class="quick-action-icon">📅</div>
+        <div class="quick-action-label">My Plan</div>
+    </a>
+</div>
+
+<!-- Today's Calories -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Today's Calories</span>
+        <span class="card-icon">🔥</span>
+    </div>
+
+    <div class="calorie-ring">
+        <svg width="160" height="160">
+            <circle class="bg" cx="80" cy="80" r="68"></circle>
+            <circle class="progress" cx="80" cy="80" r="68"
+                stroke-dasharray="427"
+                stroke-dashoffset="{{ 427 - (427 * (today_calories / calorie_goal)) if calorie_goal else 427 }}">
+            </circle>
+        </svg>
+        <div class="center">
+            <div class="value">{{ today_calories }}</div>
+            <div class="label">of {{ calorie_goal }} kcal</div>
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {{ (today_calories / calorie_goal * 100) if calorie_goal else 0 }}%"></div>
+    </div>
+</div>
+
+<!-- Today's Workouts -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Today's Workouts</span>
+        <span class="card-icon">💪</span>
+    </div>
+
+    {% if today_workouts %}
+        {% for workout in today_workouts %}
+        <div class="list-item">
+            <div class="list-item-icon">🏋️</div>
+            <div class="list-item-content">
+                <div class="list-item-title">{{ workout.type|title }} Training</div>
+                <div class="list-item-subtitle">{{ workout.exercises_count or 0 }} exercises</div>
+            </div>
+            <span class="tag tag-primary">Done</span>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center text-muted" style="padding: 20px;">
+            <p>No workouts logged yet today</p>
+            <a href="{{ url_for('start_workout') }}" class="btn btn-primary btn-sm mt-16">
+                Start Workout
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Recent Food -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Today's Food</span>
+        <span class="card-icon">🍽️</span>
+    </div>
+
+    {% if today_food %}
+        {% for food in today_food[:5] %}
+        <div class="list-item">
+            <div class="list-item-icon">{% if food.is_homemade %}🏠{% else %}🛵{% endif %}</div>
+            <div class="list-item-content">
+                <div class="list-item-title">{{ food.name }}</div>
+                <div class="list-item-subtitle">{{ food.meal_type|title }}</div>
+            </div>
+            <span class="tag">{{ food.calories }} kcal</span>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center text-muted" style="padding: 20px;">
+            <p>No food logged yet today</p>
+            <a href="{{ url_for('food_menu') }}" class="btn btn-secondary btn-sm mt-16">
+                Log Food
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Stats -->
+<div class="stats-grid fade-in">
+    <div class="stat-card">
+        <div class="stat-value">{{ user.weight }}</div>
+        <div class="stat-label">Current Weight (kg)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ user.target_weight or user.weight }}</div>
+        <div class="stat-label">Target Weight (kg)</div>
+    </div>
+</div>
+
+{% endblock %}

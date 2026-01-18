@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Workouts - My Fitness App{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1>Workouts</h1>
+    <p class="subtitle">Track your training progress</p>
+</div>
+
+<!-- Today's Workout Plan -->
+{% if todays_workout %}
+<div class="workout-summary fade-in">
+    <h3>Today's Plan: {{ todays_workout.name }}</h3>
+    <p class="text-muted">{{ todays_workout.description }}</p>
+    <div class="workout-summary-stats">
+        <div class="workout-summary-stat">
+            <div class="value">{{ todays_workout.exercises|length if todays_workout.exercises else 0 }}</div>
+            <div class="label">Exercises</div>
+        </div>
+        <div class="workout-summary-stat">
+            <div class="value">{{ todays_workout.total_sets or 25 }}</div>
+            <div class="label">Sets</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Start Workout Button -->
+<a href="{{ url_for('start_workout') }}" class="btn btn-primary mb-24 fade-in">
+    <span class="btn-icon">🏋️</span>
+    Start Workout
+</a>
+
+<!-- Recent Workouts -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Recent Workouts</span>
+    </div>
+
+    {% if recent_workouts %}
+        {% for workout in recent_workouts %}
+        <div class="list-item">
+            <div class="list-item-icon">💪</div>
+            <div class="list-item-content">
+                <div class="list-item-title">{{ workout.type|title if workout.type else 'Strength' }} Training</div>
+                <div class="list-item-subtitle">{{ workout.date }} - {{ workout.exercises_count or 0 }} exercises</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center text-muted" style="padding: 20px;">
+            <p>No workouts yet. Start your first one!</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Quick Links -->
+<div class="card fade-in">
+    <div class="card-header">
+        <span class="card-title">Quick Links</span>
+    </div>
+
+    <a href="{{ url_for('workout_plan') }}" class="list-item" style="text-decoration: none;">
+        <div class="list-item-icon">📅</div>
+        <div class="list-item-content">
+            <div class="list-item-title">View Workout Plan</div>
+            <div class="list-item-subtitle">See your weekly schedule</div>
+        </div>
+        <span class="list-item-action">→</span>
+    </a>
+
+    <a href="#" onclick="showExerciseSearch()" class="list-item" style="text-decoration: none;">
+        <div class="list-item-icon">🔍</div>
+        <div class="list-item-content">
+            <div class="list-item-title">Exercise Database</div>
+            <div class="list-item-subtitle">Browse 65+ exercises with form tips</div>
+        </div>
+        <span class="list-item-action">→</span>
+    </a>
+</div>
+
+<!-- Exercise Search Modal -->
+<div id="exercise-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Exercise Database</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="exercise-search"
+                   placeholder="Search exercises..." oninput="searchExercises(this.value)">
+        </div>
+
+        <div id="exercise-results"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showExerciseSearch() {
+    document.getElementById('exercise-modal').classList.add('active');
+    searchExercises('');
+}
+
+function closeModal() {
+    document.getElementById('exercise-modal').classList.remove('active');
+}
+
+async function searchExercises(query) {
+    try {
+        const response = await fetch(`/exercise/search?q=${encodeURIComponent(query)}`);
+        const exercises = await response.json();
+
+        const resultsDiv = document.getElementById('exercise-results');
+        if (exercises.length === 0) {
+            resultsDiv.innerHTML = '<p class="text-center text-muted">No exercises found</p>';
+            return;
+        }
+
+        resultsDiv.innerHTML = exercises.map(ex => `
+            <div class="list-item" onclick="showExerciseInfo('${ex.name}')">
+                <div class="list-item-icon">🏋️</div>
+                <div class="list-item-content">
+                    <div class="list-item-title">${ex.name}</div>
+                    <div class="list-item-subtitle">${ex.primary_muscles.join(', ')}</div>
+                </div>
+                <span class="tag">${ex.type}</span>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error('Error searching exercises:', err);
+    }
+}
+
+async function showExerciseInfo(name) {
+    try {
+        const response = await fetch(`/exercise/info/${encodeURIComponent(name)}`);
+        const info = await response.json();
+
+        const resultsDiv = document.getElementById('exercise-results');
+        resultsDiv.innerHTML = `
+            <div class="exercise-card">
+                <button class="btn btn-secondary btn-sm mb-16" onclick="searchExercises('')">← Back</button>
+
+                <h2 class="exercise-name">${info.name}</h2>
+
+                <div class="exercise-tips">
+                    <h4>Form Tips</h4>
+                    <ul>
+                        ${info.form_tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                </div>
+
+                ${info.common_mistakes && info.common_mistakes.length > 0 ? `
+                <div class="exercise-mistakes">
+                    <h4>Common Mistakes</h4>
+                    <ul>
+                        ${info.common_mistakes.map(m => `<li>${m}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+
+                ${info.last_performance ? `
+                <div class="exercise-recommendation">
+                    <h4>Last Performance</h4>
+                    <p>${info.last_performance.weight}kg × ${info.last_performance.reps} reps</p>
+                </div>
+                ` : ''}
+
+                <div class="mb-16">
+                    <span class="tag">${info.type}</span>
+                    ${info.primary_muscles.map(m => `<span class="tag">${m}</span>`).join('')}
+                </div>
+            </div>
+        `;
+    } catch (err) {
+        console.error('Error fetching exercise info:', err);
+    }
+}
+
+// Close modal on background click
+document.getElementById('exercise-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
+{% endblock %}
